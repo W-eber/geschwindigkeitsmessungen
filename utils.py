@@ -58,9 +58,18 @@ def process_data(data):
     category_order = ['1-5 km/h', '6-10 km/h', '11-15 km/h', '15-20 km/h', '21-25 km/h', '25+ km/h']
     daily_exceedance_categories = daily_exceedance_categories[category_order]
 
+    # Differenz in der Anzahl Fahrzeuge, die beschleunigt oder gebremst haben
+    df['verhalten'] = df.apply(
+        lambda row: 'beschleunigt' if row['v_delta'] > 0 else 'gebremst', axis=1
+    )
+    acceleration_braking_stats = df.pivot_table(
+        index='v_einfahrt', columns='verhalten', aggfunc='size', fill_value=0
+    )
+
     return {
         "Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats,
         "Überschreitungen der 30er Zone pro Monat": monthly_exceedances,
         "Durchschnittsgeschwindigkeit pro Stunde am Tag": hourly_avg_speed,
-        "Überschreitungen Kategorien pro Tag": daily_exceedance_categories
+        "Überschreitungen Kategorien pro Tag": daily_exceedance_categories,
+        "Beschleunigt/Gebremst": acceleration_braking_stats
     }
