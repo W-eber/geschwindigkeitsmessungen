@@ -31,42 +31,32 @@ def process_data(data):
         .reindex(range(1, 13), fill_value=0)
         .reset_index(name='amount')
     )
-    
-    # 3. Durchschnittsgeschwindigkeit pro Stunde am Tag
-    hourly_avg_speed = df.groupby('hour')['v_einfahrt'].mean().round().astype(int).reset_index(name='Durchschnittsgeschwindigkeit')
 
-    # 4. Anzahl der Überschreitungen in verschiedenen Kategorien pro Tag
-    def categorize_speed_exceedance(row):
-        delta = row['v_einfahrt'] - 30
-        if 1 <= delta <= 5:
-            return '1-5 km/h'
-        elif 6 <= delta <= 10:
-            return '6-10 km/h'
-        elif 11 <= delta <= 15:
-            return '11-15 km/h'
-        elif 16 <= delta <= 20:
-            return '15-20 km/h'
-        elif 21 <= delta <= 25:
-            return '21-25 km/h'
-        elif delta > 25:
-            return '25+ km/h'
-        else:
-            return '0 km/h'
+    # 3. Durchschnittsgeschwindigkeit pro Stunde am Tag (functional)
+    hourly_avg_speed = (df.groupby('hour')['v_einfahrt'].apply(lambda x: round(x.mean())).reset_index(name='Durchschnittsgeschwindigkeit'))
 
-    df['ueberschreitungs_kategorie'] = df.apply(categorize_speed_exceedance, axis=1)
-    daily_exceedance_categories = df[df['ueberschreitungs_kategorie'] != '0 km/h'].groupby(['day', 'ueberschreitungs_kategorie']).size().unstack(fill_value=0)
-    category_order = ['1-5 km/h', '6-10 km/h', '11-15 km/h', '15-20 km/h', '21-25 km/h', '25+ km/h']
-    daily_exceedance_categories = daily_exceedance_categories[category_order]
+    # 4. Anzahl der Überschreitungen in verschiedenen Kategorien pro Tag (functional)
+    categorize_speed_exceedance = lambda delta: (
+        '1-5 km/h' if 1 <= delta <= 5 else
+        '6-10 km/h' if 6 <= delta <= 10 else
+        '11-15 km/h' if 11 <= delta <= 15 else
+        '15-20 km/h' if 16 <= delta <= 20 else
+        '21-25 km/h' if 21 <= delta <= 25 else
+        '25+ km/h' if delta > 25 else '0 km/h'
+    )
 
-    # 5. Differenz in der Anzahl Fahrzeuge, die beschleunigt oder gebremst haben
-
-    df['verhalten'] = df.apply(
-        lambda row: 'beschleunigt' if row['v_delta'] > 0 else 'gebremst', axis=1
+    df['ueberschreitungs_kategorie'] = list(map(lambda v: categorize_speed_exceedance(v - 30), df['v_einfahrt']))
+    daily_exceedance_categories = (
+        df.pipe(lambda d: d[d['ueberschreitungs_kategorie'] != '0 km/h'])
+        .groupby(['day', 'ueberschreitungs_kategorie']).size()
+        .unstack(fill_value=0)
+        .reindex(columns=['1-5 km/h', '6-10 km/h', '11-15 km/h', '15-20 km/h', '21-25 km/h', '25+ km/h'], fill_value=0)
     )
     acceleration_braking_stats = df.pivot_table(
         index='v_einfahrt', columns='verhalten', aggfunc='size', fill_value=0
     )
 
+    # ergebnis als Dictionary zurückgeben
     return {
         "Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats,
         "Überschreitungen der 30er Zone pro Monat": monthly_exceedances,
