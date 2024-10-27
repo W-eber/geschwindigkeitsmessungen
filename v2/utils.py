@@ -52,8 +52,11 @@ def process_data(data):
         .unstack(fill_value=0)
         .reindex(columns=['1-5 km/h', '6-10 km/h', '11-15 km/h', '15-20 km/h', '21-25 km/h', '25+ km/h'], fill_value=0)
     )
-    acceleration_braking_stats = df.pivot_table(
-        index='v_einfahrt', columns='verhalten', aggfunc='size', fill_value=0
+
+    # 5. Differenz in der Anzahl Fahrzeuge, die beschleunigt oder gebremst haben (functional)
+    df['verhalten'] = list(map(lambda v: 'beschleunigt' if v > 0 else 'gebremst', df['v_delta']))
+    acceleration_braking_stats = (
+        df.pivot_table(index='v_einfahrt', columns='verhalten', aggfunc='size', fill_value=0)
     )
 
     # ergebnis als Dictionary zurückgeben
