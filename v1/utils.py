@@ -1,13 +1,37 @@
+"""
+utils.py
+Beschreibung: Hilfsfunktionen zur Verarbeitung von Geschwindigkeitsdaten aus einer JSON Datei.
+Autor: Martin Stoyanov und David Weber
+Version: 1.0
+"""
 import pandas as pd
 import json
 
 def read_json(file_path):
-    # JSON-Datei einlesen
+    """
+    Liest eine JSON Datei ein und gibt die enthaltenen Daten zurück.
+
+    Parameter:
+    file_path (str): Der Pfad zur JSON Datei.
+
+    Rückgabewert:
+    dict: Die Daten aus der JSON Datei.
+    """
+    # JSON Datei einlesen
     with open(file_path, "r") as file:
         data = json.load(file)
     return data
 
 def process_data(data):
+    """
+    Verarbeitet die eingelesenen Daten und erstellt verschiedene Statistiken.
+
+    Parameter:
+    data (dict): Die eingelesenen Daten als Dictionary.
+
+    Rückgabewert:
+    dict: Ein Dictionary mit verschiedenen Statistiken.
+    """
     # dataframe erstellen und in dataframe umwandeln
     df = pd.DataFrame(data)
 
