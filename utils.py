@@ -35,8 +35,32 @@ def process_data(data):
     # Durchschnittsgeschwindigkeit pro Stunde am Tag berechnen
     hourly_avg_speed = df.groupby('hour')['v_einfahrt'].mean().round().astype(int).reset_index(name='Durchschnittsgeschwindigkeit')
 
+    # Überschreitungen Kategorien pro Tag berechnen
+    def categorize_speed_exceedance(row):
+        delta = row['v_einfahrt'] - 30
+        if 1 <= delta <= 5:
+            return '1-5 km/h'
+        elif 6 <= delta <= 10:
+            return '6-10 km/h'
+        elif 11 <= delta <= 15:
+            return '11-15 km/h'
+        elif 16 <= delta <= 20:
+            return '15-20 km/h'
+        elif 21 <= delta <= 25:
+            return '21-25 km/h'
+        elif delta > 25:
+            return '25+ km/h'
+        else:
+            return '0 km/h'
+
+    df['ueberschreitungs_kategorie'] = df.apply(categorize_speed_exceedance, axis=1)
+    daily_exceedance_categories = df[df['ueberschreitungs_kategorie'] != '0 km/h'].groupby(['day', 'ueberschreitungs_kategorie']).size().unstack(fill_value=0)
+    category_order = ['1-5 km/h', '6-10 km/h', '11-15 km/h', '15-20 km/h', '21-25 km/h', '25+ km/h']
+    daily_exceedance_categories = daily_exceedance_categories[category_order]
+
     return {
         "Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats,
         "Überschreitungen der 30er Zone pro Monat": monthly_exceedances,
-        "Durchschnittsgeschwindigkeit pro Stunde am Tag": hourly_avg_speed
+        "Durchschnittsgeschwindigkeit pro Stunde am Tag": hourly_avg_speed,
+        "Überschreitungen Kategorien pro Tag": daily_exceedance_categories
     }
