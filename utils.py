@@ -32,7 +32,11 @@ def process_data(data):
     monthly_exceedances.index = monthly_exceedances.index.map(lambda x: f"Monat {x}")
     monthly_exceedances.name = 'Überschreitungen > 30 km/h'
 
+    # Durchschnittsgeschwindigkeit pro Stunde am Tag berechnen
+    hourly_avg_speed = df.groupby('hour')['v_einfahrt'].mean().round().astype(int).reset_index(name='Durchschnittsgeschwindigkeit')
+
     return {
         "Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats,
-        "Überschreitungen der 30er Zone pro Monat": monthly_exceedances
+        "Überschreitungen der 30er Zone pro Monat": monthly_exceedances,
+        "Durchschnittsgeschwindigkeit pro Stunde am Tag": hourly_avg_speed
     }
