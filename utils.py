@@ -21,4 +21,18 @@ def process_data(data):
         Max_Geschwindigkeit='max'
     ).reindex(range(1, 13), fill_value=0)
 
-    return {"Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats}
+    # Überschreitungen der 30er Zone pro Monat berechnen
+    df['ueberschreitung_30'] = df['v_einfahrt'] > 30
+    monthly_exceedances = (
+        df[df['ueberschreitung_30']]
+        .groupby('month')
+        .size()
+        .reindex(range(1, 13), fill_value=0)
+    )
+    monthly_exceedances.index = monthly_exceedances.index.map(lambda x: f"Monat {x}")
+    monthly_exceedances.name = 'Überschreitungen > 30 km/h'
+
+    return {
+        "Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats,
+        "Überschreitungen der 30er Zone pro Monat": monthly_exceedances
+    }
