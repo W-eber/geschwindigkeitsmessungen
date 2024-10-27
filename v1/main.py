@@ -3,7 +3,7 @@ from utils import read_json, process_data
 
 def main():
     # Datei path definieren und daten einlesen
-    file_path = "data/messungen.json"
+    file_path = "./data/messungen.json"
     data = read_json(file_path)
 
     # daten verarbeiten
