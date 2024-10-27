@@ -14,4 +14,11 @@ def process_data(data):
     df['hour'] = pd.to_datetime(df['messung_zeit'], format='%H:%M:%S').dt.hour
     df['month'] = pd.to_datetime(df['messung_datum']).dt.month
     df['day'] = pd.to_datetime(df['messung_datum']).dt.day
-    return df
+
+    # schnellste / langsamste Einfahrtsgeschwindigkeit pro Monat berechnen
+    speed_stats = df.groupby('month')['v_einfahrt'].agg(
+        Min_Geschwindigkeit='min',
+        Max_Geschwindigkeit='max'
+    ).reindex(range(1, 13), fill_value=0)
+
+    return {"Schnellste/langsamste Einfahrtsgeschwindigkeit pro Monat": speed_stats}
