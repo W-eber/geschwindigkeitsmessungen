@@ -8,4 +8,10 @@ def read_json(file_path):
     return data
 
 def process_data(data):
-    pass
+    # Daten in DataFrame umwandeln
+    df = pd.DataFrame(data)
+    # Stunde, Monat und Tag extrahieren
+    df['hour'] = pd.to_datetime(df['messung_zeit'], format='%H:%M:%S').dt.hour
+    df['month'] = pd.to_datetime(df['messung_datum']).dt.month
+    df['day'] = pd.to_datetime(df['messung_datum']).dt.day
+    return df
